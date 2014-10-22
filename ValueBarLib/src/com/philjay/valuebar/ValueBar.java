@@ -14,7 +14,7 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
 /**
- * ValueBar is a cusom View for displaying values in an edgy bar.
+ * ValueBar is a custom View for displaying values in an edgy bar.
  * 
  * @author Philipp Jahoda
  */
@@ -28,6 +28,9 @@ public class ValueBar extends View implements AnimatorUpdateListener {
 
     /** the value the bar currently displays */
     private float mValue = 75f;
+
+    /** space between bar and borders of view */
+    private int mOffset = 1;
 
     private RectF mBar;
 
@@ -83,7 +86,8 @@ public class ValueBar extends View implements AnimatorUpdateListener {
 
         // draw the border
         if (mDrawBorder)
-            canvas.drawRect(0, 0, getWidth(), getHeight(), mBorderPaint);
+            canvas.drawRect(mOffset, mOffset, getWidth() - mOffset, getHeight() - mOffset,
+                    mBorderPaint);
     }
 
     /**
@@ -93,7 +97,7 @@ public class ValueBar extends View implements AnimatorUpdateListener {
 
         float length = ((float) getWidth() / (mMaxVal - mMinVal)) * mValue;
 
-        mBar.set(0, 0, length, getHeight());
+        mBar.set(mOffset, mOffset, length - mOffset, getHeight() - mOffset);
     }
 
     /**
@@ -151,16 +155,15 @@ public class ValueBar extends View implements AnimatorUpdateListener {
     }
 
     /**
-     * Animates the bar up from it's minimum value to the currently set value.
+     * Animates the bar up from it's minimum value to the specified value.
      * 
+     * @param to
      * @param durationMillis
      */
-    public void animateUp(int durationMillis) {
-
-        float save = mValue;
+    public void animateUp(float to, int durationMillis) {
 
         mValue = mMinVal;
-        mAnimator = ObjectAnimator.ofFloat(this, "value", mValue, save);
+        mAnimator = ObjectAnimator.ofFloat(this, "value", mValue, to);
         mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
         mAnimator.setDuration(durationMillis);
         mAnimator.addUpdateListener(this);
@@ -168,13 +171,14 @@ public class ValueBar extends View implements AnimatorUpdateListener {
     }
 
     /**
-     * Animates the bar down from it's current value to the minimum value.
+     * Animates the bar down from it's current value to the specified value.
      * 
+     * @param to
      * @param durationMillis
      */
-    public void animateDown(int durationMillis) {
+    public void animateDown(float to, int durationMillis) {
 
-        mAnimator = ObjectAnimator.ofFloat(this, "value", mValue, mMinVal);
+        mAnimator = ObjectAnimator.ofFloat(this, "value", mValue, to);
         mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
         mAnimator.setDuration(durationMillis);
         mAnimator.addUpdateListener(this);
@@ -223,6 +227,9 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      * @param formatter
      */
     public void setColorFormatter(BarColorFormatter formatter) {
+
+        if (formatter == null)
+            formatter = new DefaultColorFormatter(Color.rgb(39, 140, 230));
         mColorFormatter = formatter;
     }
 
@@ -242,6 +249,19 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      */
     public Paint getBarPaint() {
         return mBarPaint;
+    }
+
+    /**
+     * Set an offset in pixels that defines the space that is left between the
+     * bar and the borders of the View. Default: 1.
+     * 
+     * @param offsetPx
+     */
+    public void setOffset(int offsetPx) {
+
+        if (offsetPx < 0)
+            offsetPx = 0;
+        mOffset = offsetPx;
     }
 
     /**
