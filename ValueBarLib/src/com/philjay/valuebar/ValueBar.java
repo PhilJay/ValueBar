@@ -16,7 +16,10 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
+
 import com.philjay.valuebar.colors.BarColorFormatter;
+
+import java.text.DecimalFormat;
 
 /**
  * ValueBar is a custom View for displaying values in an edgy bar.
@@ -41,14 +44,18 @@ public class ValueBar extends View implements AnimatorUpdateListener {
 
     private Paint mBarPaint;
     private Paint mBorderPaint;
+    private Paint mTextPaint;
+    private Paint mOverlayPaint;
 
     private ObjectAnimator mAnimator;
 
     private boolean mDrawBorder = true;
-
+    private boolean mDrawValueText = true;
+    private boolean mDrawMinMaxText = true;
     private boolean mTouchEnabled = true;
 
     private BarColorFormatter mColorFormatter;
+    private ValueTextFormatter mValueTextFormatter;
 
     public ValueBar(Context context) {
         super(context);
@@ -69,15 +76,28 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      * Do all preparations.
      */
     private void init() {
+
+        Utils.init(getResources());
+
         mBar = new RectF();
         mBarPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mBarPaint.setStyle(Paint.Style.FILL);
 
-        mColorFormatter = new DefaultColorFormatter(Color.rgb(39, 140, 230));
-
         mBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mBorderPaint.setStyle(Paint.Style.STROKE);
-        mBorderPaint.setStrokeWidth(2f);
+        mBorderPaint.setStrokeWidth(Utils.convertDpToPixel(2f));
+
+        mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mTextPaint.setColor(Color.WHITE);
+        mTextPaint.setTextSize(Utils.convertDpToPixel(18f));
+
+        mOverlayPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mOverlayPaint.setStyle(Paint.Style.FILL);
+        mOverlayPaint.setColor(Color.WHITE);
+        mOverlayPaint.setAlpha(120);
+
+        mColorFormatter = new DefaultColorFormatter(Color.rgb(39, 140, 230));
+        mValueTextFormatter = new DefaultValueTextFormatter();
     }
 
     @Override
@@ -95,6 +115,48 @@ public class ValueBar extends View implements AnimatorUpdateListener {
         if (mDrawBorder)
             canvas.drawRect(mOffset, mOffset, getWidth() - mOffset, getHeight() - mOffset,
                     mBorderPaint);
+
+        drawText(canvas);
+    }
+
+    /**
+     * Draws all text on the ValueBar.
+     * 
+     * @param canvas
+     */
+    private void drawText(Canvas canvas) {
+
+        if (mDrawValueText) {
+
+            String text = mValueTextFormatter.getValueText(mValue, mMaxVal, mMinVal);
+
+            float textHeight = Utils.calcTextHeight(mTextPaint, text) * 1.5f;
+            float textWidth = Utils.calcTextWidth(mTextPaint, text);
+
+            float x = mBar.right - textHeight / 2f;
+            float y = getHeight() / 2f + textWidth / 2f;
+
+            if (x < textHeight)
+                x = textHeight;
+
+            // draw overlay
+            canvas.drawRect(x - textHeight / 1.5f - textHeight / 2f, 0 + mOffset, mBar.right,
+                    getHeight() - mOffset,
+                    mOverlayPaint);
+
+            canvas.save();
+
+            canvas.rotate(270, x, y);
+            canvas.drawText(text,
+                    x,
+                    y,
+                    mTextPaint);
+            canvas.restore();
+        }
+
+        if (mDrawMinMaxText) {
+
+        }
     }
 
     /**
@@ -244,10 +306,24 @@ public class ValueBar extends View implements AnimatorUpdateListener {
     }
 
     /**
+     * Sets a custom formatter that formats the value-text. Provide null to
+     * reset all changes and use the default formatter.
+     * 
+     * @param formatter
+     */
+    public void setValueTextFormatter(ValueTextFormatter formatter) {
+
+        if (formatter == null)
+            formatter = new DefaultValueTextFormatter();
+        mValueTextFormatter = formatter;
+    }
+
+    /**
      * Sets a custom BarColorFormatter for the ValueBar. Implement the
      * BarColorFormatter interface in your own formatter class and return
      * whatever color you like from the getColor(...) method. You can for
-     * example make the color depend on the current value of the bar.
+     * example make the color depend on the current value of the bar. Provide
+     * null to reset all changes.
      * 
      * @param formatter
      */
@@ -296,6 +372,14 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      */
     public void setTouchEnabled(boolean enabled) {
         mTouchEnabled = enabled;
+    }
+
+    public void setDrawValueText(boolean enabled) {
+        mDrawValueText = enabled;
+    }
+
+    public void setDrawMinMaxText(boolean enabled) {
+        mDrawMinMaxText = enabled;
     }
 
     /**
@@ -396,6 +480,25 @@ public class ValueBar extends View implements AnimatorUpdateListener {
         @Override
         public int getColor(float value, float maxVal, float minVal) {
             return mColor;
+        }
+    }
+
+    /**
+     * Default ValueTextFormatter that simply returns the value as a string.
+     * 
+     * @author Philipp Jahoda
+     */
+    private class DefaultValueTextFormatter implements ValueTextFormatter {
+
+        private DecimalFormat mFormat;
+
+        public DefaultValueTextFormatter() {
+            mFormat = new DecimalFormat("###,###,##0.00");
+        }
+
+        @Override
+        public String getValueText(float value, float maxVal, float minVal) {
+            return mFormat.format(value);
         }
     }
 }
