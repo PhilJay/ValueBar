@@ -1,5 +1,5 @@
 
-package com.philjay.valuebar;
+package com.philjay.valuebar.colors;
 
 /**
  * Interface for providing custom colors for the ValueBar.
@@ -13,7 +13,9 @@ public interface BarColorFormatter {
      * You can also make use of the current value the bar has.
      * 
      * @param value
+     * @param maxVal the maximum value the bar can display
+     * @param minVal the minimum value the bar can display
      * @return
      */
-    public int getColor(float value);
+    public int getColor(float value, float maxVal, float minVal);
 }

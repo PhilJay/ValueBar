@@ -4,14 +4,19 @@ package com.philjay.valuebar;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import com.philjay.valuebar.colors.BarColorFormatter;
 
 /**
  * ValueBar is a custom View for displaying values in an edgy bar.
@@ -40,6 +45,8 @@ public class ValueBar extends View implements AnimatorUpdateListener {
     private ObjectAnimator mAnimator;
 
     private boolean mDrawBorder = true;
+
+    private boolean mTouchEnabled = true;
 
     private BarColorFormatter mColorFormatter;
 
@@ -79,7 +86,7 @@ public class ValueBar extends View implements AnimatorUpdateListener {
 
         prepareBarSize();
 
-        mBarPaint.setColor(mColorFormatter.getColor(mValue));
+        mBarPaint.setColor(mColorFormatter.getColor(mValue, mMaxVal, mMinVal));
 
         // draw the value-bar
         canvas.drawRect(mBar, mBarPaint);
@@ -95,7 +102,7 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      */
     private void prepareBarSize() {
 
-        float length = ((float) getWidth() / (mMaxVal - mMinVal)) * mValue;
+        float length = (((float) getWidth() - mOffset * 2f) / (mMaxVal - mMinVal)) * mValue;
 
         mBar.set(mOffset, mOffset, length - mOffset, getHeight() - mOffset);
     }
@@ -109,6 +116,24 @@ public class ValueBar extends View implements AnimatorUpdateListener {
     public void setMinMax(float min, float max) {
         mMaxVal = max;
         mMinVal = min;
+    }
+
+    /**
+     * Returns the maximum value the bar can display.
+     * 
+     * @return
+     */
+    public float getMax() {
+        return mMaxVal;
+    }
+
+    /**
+     * Returns the minimum value the bar can display.
+     * 
+     * @return
+     */
+    public float getMin() {
+        return mMinVal;
     }
 
     /**
@@ -265,6 +290,97 @@ public class ValueBar extends View implements AnimatorUpdateListener {
     }
 
     /**
+     * Set this to true to enable touch gestures on the ValueBar.
+     * 
+     * @param enabled
+     */
+    public void setTouchEnabled(boolean enabled) {
+        mTouchEnabled = enabled;
+    }
+
+    /**
+     * Sets a GestureDetector for the ValueBar to receive callbacks on gestures.
+     * 
+     * @param gd
+     */
+    public void setGestureDetector(GestureDetector gd) {
+        mGestureDetector = gd;
+    }
+
+    /**
+     * Sets a selectionlistener for callbacks when selecting values on the
+     * ValueBar.
+     * 
+     * @param l
+     */
+    public void setValueBarSelectionListener(ValueBarSelectionListener l) {
+        mSelectionListener = l;
+    }
+
+    /** listener called when a value has been selected on touch */
+    private ValueBarSelectionListener mSelectionListener;
+
+    /** gesturedetector for recognizing single-taps */
+    private GestureDetector mGestureDetector;
+
+    @SuppressLint("ClickableViewAccessibility")
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+        if (mTouchEnabled) {
+
+            if (mSelectionListener == null)
+                Log.w("ValueBar",
+                        "No SelectionListener specified. Use setSelectionListener(...) to set a listener for callbacks when selecting values.");
+
+            // if the detector recognized a gesture, consume it
+            if (mGestureDetector != null && mGestureDetector.onTouchEvent(e))
+                return true;
+
+            float x = e.getX();
+            float y = e.getY();
+
+            if (x > mOffset && x < getWidth() - mOffset) {
+
+                switch (e.getAction()) {
+
+                    case MotionEvent.ACTION_DOWN:
+                        updateValue(x, y);
+                        invalidate();
+                    case MotionEvent.ACTION_MOVE:
+                        updateValue(x, y);
+                        invalidate();
+                        if (mSelectionListener != null)
+                            mSelectionListener.onSelectionUpdate(mValue, mMaxVal, mMinVal, this);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        updateValue(x, y);
+                        invalidate();
+                        if (mSelectionListener != null)
+                            mSelectionListener.onValueSelected(mValue, mMaxVal, mMinVal, this);
+                        break;
+                }
+            }
+
+            return true;
+        }
+        else
+            return super.onTouchEvent(e);
+    }
+
+    /**
+     * Updates the value on the ValueBar depending on the touch position.
+     * 
+     * @param x
+     * @param y
+     */
+    private void updateValue(float x, float y) {
+
+        float factor = (x - mOffset) / (getWidth() - mOffset * 2f);
+
+        mValue = mMaxVal * factor;
+    }
+
+    /**
      * Default BarColorFormatter class that supports a single color.
      * 
      * @author Philipp Jahoda
@@ -278,7 +394,7 @@ public class ValueBar extends View implements AnimatorUpdateListener {
         }
 
         @Override
-        public int getColor(float value) {
+        public int getColor(float value, float maxVal, float minVal) {
             return mColor;
         }
     }

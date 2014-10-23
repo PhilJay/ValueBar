@@ -3,14 +3,17 @@ package com.philjay.valuebarexample;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.philjay.valuebar.ValueBar;
+import com.philjay.valuebar.ValueBarSelectionListener;
+import com.philjay.valuebar.colors.RedToGreenFormatter;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements ValueBarSelectionListener {
 
-    private ValueBar[] mValueBars = new ValueBar[4];
+    private ValueBar[] mValueBars = new ValueBar[5];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +24,7 @@ public class MainActivity extends Activity {
         mValueBars[1] = (ValueBar) findViewById(R.id.valueBar2);
         mValueBars[2] = (ValueBar) findViewById(R.id.valueBar3);
         mValueBars[3] = (ValueBar) findViewById(R.id.valueBar4);
+        mValueBars[4] = (ValueBar) findViewById(R.id.valueBar5);
 
         setup();
     }
@@ -30,22 +34,35 @@ public class MainActivity extends Activity {
         for (ValueBar bar : mValueBars) {
 
             bar.setMinMax(0, 1000);
-            bar.animate(0, 800, 2000);
+            bar.animate(0, 900, 1500);
             bar.setDrawBorder(false);
             bar.setOffset(3);
+            bar.setValueBarSelectionListener(this);
+            bar.setColorFormatter(new RedToGreenFormatter());
+//            bar.setColor(Color.BLUE);
         }
     }
 
     private void animateUp() {
 
         for (ValueBar bar : mValueBars)
-            bar.animateUp(800, 2000);
+            bar.animateUp(800, 1500);
     }
     
     private void animateDown() {
 
         for (ValueBar bar : mValueBars)
-            bar.animateDown(0, 2000);
+            bar.animateDown(0, 1500);
+    }
+    
+    @Override
+    public void onSelectionUpdate(float val, float maxval, float minval, ValueBar bar) {
+        Log.i("ValueBar", "Value selection update: " + val);
+    }
+    
+    @Override
+    public void onValueSelected(float val, float maxval, float minval, ValueBar bar) {
+        Log.i("ValueBar", "Value selected: " + val);
     }
     
     @Override
