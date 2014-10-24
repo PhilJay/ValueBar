@@ -9,4 +9,7 @@ A beautiful Android custom View that works similar to a range or seekbar. Select
 Usage
 ========
 
-For using the `ValueBar`, either **clone this repository** and add the library folder to your Android application project, or download the **latest .jar file** from the [**release-section**](https://github.com/PhilJay/ValueBar/releases) and copy it into the `libs` folder of your Android application project.
+For using `ValueBar`, either 
+
+- **clone this repository** and add the library folder to your Android application project
+- or download the **latest .jar file** from the [**release-section**](https://github.com/PhilJay/ValueBar/releases) and copy it into the `libs` folder of your Android application project.
