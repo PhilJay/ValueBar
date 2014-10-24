@@ -11,5 +11,13 @@
         android:id="@+id/animDown"
         android:orderInCategory="100"
         android:title="Animate Down"/>
+    <item
+        android:id="@+id/toggleMinMaxLabel"
+        android:orderInCategory="100"
+        android:title="Toggle MinMax Label"/>
+    <item
+        android:id="@+id/toggleValueLabel"
+        android:orderInCategory="100"
+        android:title="Toggle Value Label"/>
 
 </menu>

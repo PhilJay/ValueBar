@@ -3,40 +3,56 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingBottom="40dp"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="40dp"
     tools:context="com.philjay.valuebar.MainActivity" >
 
     <com.philjay.valuebar.ValueBar
         android:id="@+id/valueBar1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="5dp"
         android:layout_weight="1" />
 
     <com.philjay.valuebar.ValueBar
         android:id="@+id/valueBar2"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="5dp"
         android:layout_weight="1" />
 
     <com.philjay.valuebar.ValueBar
         android:id="@+id/valueBar3"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="5dp"
         android:layout_weight="1" />
 
     <com.philjay.valuebar.ValueBar
         android:id="@+id/valueBar4"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="5dp"
         android:layout_weight="1" />
 
     <com.philjay.valuebar.ValueBar
         android:id="@+id/valueBar5"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="5dp"
         android:layout_weight="1" />
 
 </LinearLayout>

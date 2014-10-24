@@ -37,14 +37,12 @@ public class ValueBar extends View implements AnimatorUpdateListener {
     /** the value the bar currently displays */
     private float mValue = 75f;
 
-    /** space between bar and borders of view */
-    private int mOffset = 1;
-
     private RectF mBar;
 
     private Paint mBarPaint;
     private Paint mBorderPaint;
-    private Paint mTextPaint;
+    private Paint mValueTextPaint;
+    private Paint mMinMaxTextPaint;
     private Paint mOverlayPaint;
 
     private ObjectAnimator mAnimator;
@@ -87,9 +85,13 @@ public class ValueBar extends View implements AnimatorUpdateListener {
         mBorderPaint.setStyle(Paint.Style.STROKE);
         mBorderPaint.setStrokeWidth(Utils.convertDpToPixel(2f));
 
-        mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mTextPaint.setColor(Color.WHITE);
-        mTextPaint.setTextSize(Utils.convertDpToPixel(18f));
+        mValueTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mValueTextPaint.setColor(Color.WHITE);
+        mValueTextPaint.setTextSize(Utils.convertDpToPixel(18f));
+
+        mMinMaxTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mMinMaxTextPaint.setColor(Color.WHITE);
+        mMinMaxTextPaint.setTextSize(Utils.convertDpToPixel(18f));
 
         mOverlayPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mOverlayPaint.setStyle(Paint.Style.FILL);
@@ -106,6 +108,9 @@ public class ValueBar extends View implements AnimatorUpdateListener {
 
         prepareBarSize();
 
+        if (mDrawMinMaxText)
+            drawMinMaxText(canvas);
+
         mBarPaint.setColor(mColorFormatter.getColor(mValue, mMaxVal, mMinVal));
 
         // draw the value-bar
@@ -113,10 +118,11 @@ public class ValueBar extends View implements AnimatorUpdateListener {
 
         // draw the border
         if (mDrawBorder)
-            canvas.drawRect(mOffset, mOffset, getWidth() - mOffset, getHeight() - mOffset,
+            canvas.drawRect(0, 0, getWidth(), getHeight(),
                     mBorderPaint);
 
-        drawText(canvas);
+        if (mDrawValueText)
+            drawValueText(canvas);
     }
 
     /**
@@ -124,39 +130,69 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      * 
      * @param canvas
      */
-    private void drawText(Canvas canvas) {
+    private void drawValueText(Canvas canvas) {
 
-        if (mDrawValueText) {
+        String text = mValueTextFormatter.getValueText(mValue, mMaxVal, mMinVal);
 
-            String text = mValueTextFormatter.getValueText(mValue, mMaxVal, mMinVal);
+        float textHeight = Utils.calcTextHeight(mValueTextPaint, text) * 1.5f;
+        float textWidth = Utils.calcTextWidth(mValueTextPaint, text);
 
-            float textHeight = Utils.calcTextHeight(mTextPaint, text) * 1.5f;
-            float textWidth = Utils.calcTextWidth(mTextPaint, text);
+        float x = mBar.right - textHeight / 2f;
+        float y = getHeight() / 2f + textWidth / 2f;
 
-            float x = mBar.right - textHeight / 2f;
-            float y = getHeight() / 2f + textWidth / 2f;
+        if (x < textHeight)
+            x = textHeight;
 
-            if (x < textHeight)
-                x = textHeight;
+        // draw overlay
+        canvas.drawRect(x - textHeight / 1.5f - textHeight / 2f, 0, mBar.right,
+                getHeight(),
+                mOverlayPaint);
 
-            // draw overlay
-            canvas.drawRect(x - textHeight / 1.5f - textHeight / 2f, 0 + mOffset, mBar.right,
-                    getHeight() - mOffset,
-                    mOverlayPaint);
+        drawTextVertical(canvas, text, x, y, mValueTextPaint);
+    }
 
-            canvas.save();
+    /**
+     * Draws the minimum and maximum text values.
+     * 
+     * @param canvas
+     */
+    private void drawMinMaxText(Canvas canvas) {
 
-            canvas.rotate(270, x, y);
-            canvas.drawText(text,
-                    x,
-                    y,
-                    mTextPaint);
-            canvas.restore();
-        }
+        String max = mValueTextFormatter.getMaxVal(mMaxVal);
+        String min = mValueTextFormatter.getMinVal(mMinVal);
 
-        if (mDrawMinMaxText) {
+        float textHeight = Utils.calcTextHeight(mValueTextPaint, min) * 1.5f;
 
-        }
+        // draw max
+        drawTextVertical(canvas, max, getWidth() - textHeight / 2f,
+                getHeight() / 2f + Utils.calcTextWidth(mMinMaxTextPaint, max) / 2f,
+                mMinMaxTextPaint);
+
+        if (!mDrawValueText) // draw min
+            drawTextVertical(canvas, min, textHeight,
+                    getHeight() / 2f + Utils.calcTextWidth(mMinMaxTextPaint, min) / 2f,
+                    mMinMaxTextPaint);
+    }
+
+    /**
+     * Draws the text vertically at the provided position.
+     * 
+     * @param canvas
+     * @param text
+     * @param x
+     * @param y
+     * @param p
+     */
+    private void drawTextVertical(Canvas canvas, String text, float x, float y, Paint p) {
+
+        canvas.save();
+
+        canvas.rotate(270, x, y);
+        canvas.drawText(text,
+                x,
+                y,
+                p);
+        canvas.restore();
     }
 
     /**
@@ -164,9 +200,9 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      */
     private void prepareBarSize() {
 
-        float length = (((float) getWidth() - mOffset * 2f) / (mMaxVal - mMinVal)) * mValue;
+        float length = ((float) getWidth() / (mMaxVal - mMinVal)) * mValue;
 
-        mBar.set(mOffset, mOffset, length - mOffset, getHeight() - mOffset);
+        mBar.set(0, 0, length, getHeight());
     }
 
     /**
@@ -353,19 +389,6 @@ public class ValueBar extends View implements AnimatorUpdateListener {
     }
 
     /**
-     * Set an offset in pixels that defines the space that is left between the
-     * bar and the borders of the View. Default: 1.
-     * 
-     * @param offsetPx
-     */
-    public void setOffset(int offsetPx) {
-
-        if (offsetPx < 0)
-            offsetPx = 0;
-        mOffset = offsetPx;
-    }
-
-    /**
      * Set this to true to enable touch gestures on the ValueBar.
      * 
      * @param enabled
@@ -374,12 +397,56 @@ public class ValueBar extends View implements AnimatorUpdateListener {
         mTouchEnabled = enabled;
     }
 
+    /**
+     * Set this to true to enable drawing the actual value that is currently
+     * displayed onto the bar.
+     * 
+     * @param enabled
+     */
     public void setDrawValueText(boolean enabled) {
         mDrawValueText = enabled;
     }
 
+    /**
+     * Returns true if drawing the text that describes the actual value is
+     * enabled.
+     * 
+     * @return
+     */
+    public boolean isDrawValueTextEnabled() {
+        return mDrawValueText;
+    }
+
+    /**
+     * Set this to true to enable drawing the minimum and maximum labels below
+     * the bar.
+     * 
+     * @param enabled
+     */
     public void setDrawMinMaxText(boolean enabled) {
         mDrawMinMaxText = enabled;
+    }
+
+    /**
+     * Returns true if drawing the minimum and maximum label is enabled.
+     * 
+     * @return
+     */
+    public boolean isDrawMinMaxTextEnabled() {
+        return mDrawMinMaxText;
+    }
+
+    /**
+     * Returns the corresponding value for a pixel-position on the horizontal
+     * axis.
+     * 
+     * @param xPos
+     * @return
+     */
+    public float getValueForPosition(int xPos) {
+
+        float factor = xPos / getWidth();
+        return mMaxVal * factor;
     }
 
     /**
@@ -423,26 +490,23 @@ public class ValueBar extends View implements AnimatorUpdateListener {
             float x = e.getX();
             float y = e.getY();
 
-            if (x > mOffset && x < getWidth() - mOffset) {
+            switch (e.getAction()) {
 
-                switch (e.getAction()) {
-
-                    case MotionEvent.ACTION_DOWN:
-                        updateValue(x, y);
-                        invalidate();
-                    case MotionEvent.ACTION_MOVE:
-                        updateValue(x, y);
-                        invalidate();
-                        if (mSelectionListener != null)
-                            mSelectionListener.onSelectionUpdate(mValue, mMaxVal, mMinVal, this);
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        updateValue(x, y);
-                        invalidate();
-                        if (mSelectionListener != null)
-                            mSelectionListener.onValueSelected(mValue, mMaxVal, mMinVal, this);
-                        break;
-                }
+                case MotionEvent.ACTION_DOWN:
+                    updateValue(x, y);
+                    invalidate();
+                case MotionEvent.ACTION_MOVE:
+                    updateValue(x, y);
+                    invalidate();
+                    if (mSelectionListener != null)
+                        mSelectionListener.onSelectionUpdate(mValue, mMaxVal, mMinVal, this);
+                    break;
+                case MotionEvent.ACTION_UP:
+                    updateValue(x, y);
+                    invalidate();
+                    if (mSelectionListener != null)
+                        mSelectionListener.onValueSelected(mValue, mMaxVal, mMinVal, this);
+                    break;
             }
 
             return true;
@@ -459,9 +523,15 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      */
     private void updateValue(float x, float y) {
 
-        float factor = (x - mOffset) / (getWidth() - mOffset * 2f);
+        if (x <= 0)
+            mValue = mMinVal;
+        else if (x > getWidth())
+            mValue = mMaxVal;
+        else {
+            float factor = x / getWidth();
 
-        mValue = mMaxVal * factor;
+            mValue = mMaxVal * factor;
+        }
     }
 
     /**
@@ -499,6 +569,16 @@ public class ValueBar extends View implements AnimatorUpdateListener {
         @Override
         public String getValueText(float value, float maxVal, float minVal) {
             return mFormat.format(value);
+        }
+
+        @Override
+        public String getMinVal(float minVal) {
+            return mFormat.format(minVal);
+        }
+
+        @Override
+        public String getMaxVal(float maxVal) {
+            return mFormat.format(maxVal);
         }
     }
 }
