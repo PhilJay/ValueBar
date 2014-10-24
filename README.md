@@ -1,4 +1,4 @@
-ValueBar - currently in development
+ValueBar
 ========
 
 A beautiful Android custom View that works similar to a range or seekbar. Selection by gesture. With animations. **Supporting API level 11+.**
