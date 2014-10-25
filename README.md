@@ -44,6 +44,9 @@ Apply styling, and display values:
  
  // create your custom color formatter by using the BarColorFormatter interface
  bar.setColorFormatter(new RedToGreenFormatter());
+ 
+ // add your custom text formatter by using the ValueTextFormatter interface
+ bar.setValueTextFormatter(...);
             
  bar.setValue(800f); // display a value
             
