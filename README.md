@@ -6,6 +6,10 @@ A beautiful Android custom View that works similar to a range or seekbar. Select
 ![alt tag](https://raw.github.com/PhilJay/ValueBar/master/screenshots/adgraphic.jpg)
 
 
+Demo
+=======
+For a short demonstration, please download the [**demo application**](https://play.google.com/store/apps/details?id=com.philjay.valuebarexample) from the Google PlayStore. The corresponding code for the demo application can be found in the `ValueBarExample` folder.
+
 Usage
 ========
 
