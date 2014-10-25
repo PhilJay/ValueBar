@@ -7,9 +7,6 @@ import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-
 /**
  * Utilities class that has some helper methods. Needs to be initialized by
  * calling Utils.init(...) before usage. Inside the Chart.init() method, this is

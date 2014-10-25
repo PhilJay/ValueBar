@@ -2,6 +2,7 @@
 package com.philjay.valuebarexample;
 
 import android.app.Activity;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -30,13 +31,20 @@ public class MainActivity extends Activity implements ValueBarSelectionListener 
     }
 
     private void setup() {
+        
+        Typeface tf = Typeface.createFromAsset(getAssets(), "OpenSans-Light.ttf");
 
         for (ValueBar bar : mValueBars) {
 
             bar.setMinMax(0, 1000);
             bar.animate(0, 900, 1500);
+            bar.setInterval(1f);
             bar.setDrawBorder(false);
             bar.setValueBarSelectionListener(this);
+            bar.setValueTextSize(15f);
+            bar.setMinMaxTextSize(18f);
+            bar.setValueTextTypeface(tf);
+            bar.setMinMaxTextTypeface(tf);
             bar.setColorFormatter(new RedToGreenFormatter());
             // bar.setColor(Color.BLUE);
         }

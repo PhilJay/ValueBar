@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -36,6 +37,9 @@ public class ValueBar extends View implements AnimatorUpdateListener {
 
     /** the value the bar currently displays */
     private float mValue = 75f;
+
+    /** the interval in which values can be chosen and displayed */
+    private float mInterval = 1f;
 
     private RectF mBar;
 
@@ -132,6 +136,9 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      */
     private void drawValueText(Canvas canvas) {
 
+        if (mValue <= mMinVal && mDrawMinMaxText)
+            return;
+
         String text = mValueTextFormatter.getValueText(mValue, mMaxVal, mMinVal);
 
         float textHeight = Utils.calcTextHeight(mValueTextPaint, text) * 1.5f;
@@ -168,7 +175,7 @@ public class ValueBar extends View implements AnimatorUpdateListener {
                 getHeight() / 2f + Utils.calcTextWidth(mMinMaxTextPaint, max) / 2f,
                 mMinMaxTextPaint);
 
-        if (!mDrawValueText) // draw min
+        if (!mDrawValueText || mValue <= mMinVal) // draw min
             drawTextVertical(canvas, min, textHeight,
                     getHeight() / 2f + Utils.calcTextWidth(mMinMaxTextPaint, min) / 2f,
                     mMinMaxTextPaint);
@@ -200,7 +207,7 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      */
     private void prepareBarSize() {
 
-        float length = ((float) getWidth() / (mMaxVal - mMinVal)) * mValue;
+        float length = ((float) getWidth() / (mMaxVal - mMinVal)) * (mValue - mMinVal);
 
         mBar.set(0, 0, length, getHeight());
     }
@@ -235,7 +242,8 @@ public class ValueBar extends View implements AnimatorUpdateListener {
     }
 
     /**
-     * Sets the actual value the bar displays.
+     * Sets the actual value the bar displays. Do not forget to set a minimum
+     * and maximum value.
      * 
      * @param value
      */
@@ -250,6 +258,25 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      */
     public float getValue() {
         return mValue;
+    }
+
+    /**
+     * Sets the interval in which the values can be chosen and dispalyed from /
+     * on the ValueBar. If interval <= 0, there is no interval.
+     * 
+     * @param interval
+     */
+    public void setInterval(float interval) {
+        mInterval = interval;
+    }
+
+    /**
+     * Returns the interval in which values can be chosen and displayed.
+     * 
+     * @return
+     */
+    public float getInterval() {
+        return mInterval;
     }
 
     /**
@@ -269,6 +296,17 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      * @param durationMillis
      */
     public void animate(float from, float to, int durationMillis) {
+
+        if (from < mMinVal)
+            from = mMinVal;
+        if (from > mMaxVal)
+            from = mMaxVal;
+
+        if (to < mMinVal)
+            to = mMinVal;
+        if (to > mMaxVal)
+            to = mMaxVal;
+
         mValue = from;
         mAnimator = ObjectAnimator.ofFloat(this, "value", mValue, to);
         mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -285,7 +323,9 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      */
     public void animateUp(float to, int durationMillis) {
 
-        mValue = mMinVal;
+        if (to > mMaxVal)
+            to = mMaxVal;
+
         mAnimator = ObjectAnimator.ofFloat(this, "value", mValue, to);
         mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
         mAnimator.setDuration(durationMillis);
@@ -300,6 +340,9 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      * @param durationMillis
      */
     public void animateDown(float to, int durationMillis) {
+
+        if (to < mMinVal)
+            to = mMinVal;
 
         mAnimator = ObjectAnimator.ofFloat(this, "value", mValue, to);
         mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -386,6 +429,60 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      */
     public Paint getBarPaint() {
         return mBarPaint;
+    }
+
+    /**
+     * Returns the Paint object used for drawing the value-text.
+     * 
+     * @return
+     */
+    public Paint getValueTextPaint() {
+        return mValueTextPaint;
+    }
+
+    /**
+     * Returns the Paint object used for drawing min an max text.
+     * 
+     * @return
+     */
+    public Paint getMinMaxTextPaint() {
+        return mMinMaxTextPaint;
+    }
+
+    /**
+     * Sets the size of the value-text in density pixels.
+     * 
+     * @param size
+     */
+    public void setValueTextSize(float size) {
+        mValueTextPaint.setTextSize(Utils.convertDpToPixel(size));
+    }
+
+    /**
+     * Sets the Typeface of the value-text.
+     * 
+     * @param size
+     */
+    public void setValueTextTypeface(Typeface tf) {
+        mValueTextPaint.setTypeface(tf);
+    }
+
+    /**
+     * Sets the size of the min-max text in density pixels.
+     * 
+     * @param size
+     */
+    public void setMinMaxTextSize(float size) {
+        mMinMaxTextPaint.setTextSize(Utils.convertDpToPixel(size));
+    }
+
+    /**
+     * Sets the Typeface of the min-max text.
+     * 
+     * @param size
+     */
+    public void setMinMaxTextTypeface(Typeface tf) {
+        mMinMaxTextPaint.setTypeface(tf);
     }
 
     /**
@@ -523,15 +620,32 @@ public class ValueBar extends View implements AnimatorUpdateListener {
      */
     private void updateValue(float x, float y) {
 
+        float newVal = 0f;
+
         if (x <= 0)
-            mValue = mMinVal;
+            newVal = mMinVal;
         else if (x > getWidth())
-            mValue = mMaxVal;
+            newVal = mMaxVal;
         else {
             float factor = x / getWidth();
 
-            mValue = mMaxVal * factor;
+            newVal = (mMaxVal - mMinVal) * factor + mMinVal;
         }
+
+        if (mInterval > 0f) {
+
+            float remainder = newVal % mInterval;
+
+            // check if the new value is closer to the next, or the previous
+            if (remainder <= mInterval / 2f) {
+
+                newVal = newVal - remainder;
+            } else {
+                newVal = newVal - remainder + mInterval;
+            }
+        }
+
+        mValue = newVal;
     }
 
     /**
