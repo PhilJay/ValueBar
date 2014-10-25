@@ -2,7 +2,9 @@
 package com.philjay.valuebarexample;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -31,7 +33,7 @@ public class MainActivity extends Activity implements ValueBarSelectionListener 
     }
 
     private void setup() {
-        
+
         Typeface tf = Typeface.createFromAsset(getAssets(), "OpenSans-Light.ttf");
 
         for (ValueBar bar : mValueBars) {
@@ -109,6 +111,11 @@ public class MainActivity extends Activity implements ValueBarSelectionListener 
                 break;
             case R.id.toggleValueLabel:
                 toggleValueLabel();
+                break;
+            case R.id.viewGithub:
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse("https://github.com/PhilJay/ValueBar"));
+                startActivity(i);
                 break;
         }
 
