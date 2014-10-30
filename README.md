@@ -57,3 +57,12 @@ Apply styling, and display values:
  bar.setValueBarSelectionListener(...); // add a listener for callbacks when touching
 
 ```
+
+Donations
+======
+
+If you would like to support this project's further development, the creator of this project or the continuous maintenance of this project, **feel free to donate**. Your donation is highly appreciated.
+
+PayPal
+
+[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EGBENAC5XBCKS)
