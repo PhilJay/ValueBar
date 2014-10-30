@@ -45,6 +45,7 @@ Apply styling, and display values:
  bar.setMinMaxTextSize(14f);
  bar.setValueTextTypeface(...);
  bar.setMinMaxTextTypeface(...);
+ bar.setOverlayColor(...);
  
  // create your custom color formatter by using the BarColorFormatter interface
  bar.setColorFormatter(new RedToGreenFormatter());
