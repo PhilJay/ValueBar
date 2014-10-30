@@ -3,6 +3,7 @@ package com.philjay.valuebarexample;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -43,11 +44,13 @@ public class MainActivity extends Activity implements ValueBarSelectionListener 
             bar.setInterval(1f);
             bar.setDrawBorder(false);
             bar.setValueBarSelectionListener(this);
-            bar.setValueTextSize(15f);
-            bar.setMinMaxTextSize(18f);
+            bar.setValueTextSize(14f);
+            bar.setMinMaxTextSize(16f);
             bar.setValueTextTypeface(tf);
             bar.setMinMaxTextTypeface(tf);
+            bar.setValueTextFormatter(new MyCustomValueTextFormatter());
             bar.setColorFormatter(new RedToGreenFormatter());
+            bar.setOverlayColor(Color.BLACK);
             // bar.setColor(Color.BLUE);
         }
     }

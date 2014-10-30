@@ -11,7 +11,7 @@ import com.philjay.valuebar.colors.BarColorFormatter;
  * 
  * @author philipp
  */
-public class MyCustomFormatter implements BarColorFormatter {
+public class MyCustomColorFormatter implements BarColorFormatter {
 
     @Override
     public int getColor(float value, float maxVal, float minVal) {

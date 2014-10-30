@@ -486,6 +486,17 @@ public class ValueBar extends View implements AnimatorUpdateListener {
     }
 
     /**
+     * Sets the color of the overlay that is placed below the value-text.
+     * 
+     * @param color
+     */
+    public void setOverlayColor(int color) {
+        int alpha = mOverlayPaint.getAlpha();
+        mOverlayPaint.setColor(color);
+        mOverlayPaint.setAlpha(alpha);
+    }
+
+    /**
      * Set this to true to enable touch gestures on the ValueBar.
      * 
      * @param enabled
