@@ -54,6 +54,9 @@ Apply styling, and display values:
  bar.setValueTextFormatter(...);
             
  bar.setValue(800f); // display a value
+ 
+ // or animate from a specific value to a specific value
+ bar.animate(from, to, animationDuration);
             
  bar.setValueBarSelectionListener(...); // add a listener for callbacks when touching
 
