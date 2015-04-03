@@ -13,10 +13,41 @@ For a short demonstration, please download the [**demo application**](https://pl
 Usage
 ========
 
-For using `ValueBar`, either 
+For using `ValueBar`, there are various possibilities: 
 
-- **clone this repository** and add the library folder to your Android application project
-- or download the **latest .jar file** from the [**release-section**](https://github.com/PhilJay/ValueBar/releases) and copy it into the `libs` folder of your Android application project.
+**1. Gradle dependency**
+
+ - Add the following to your `build.gradle`:
+ ```gradle
+repositories {
+	    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+	    compile 'com.github.PhilJay:ValueBar:v1.0.2'
+}
+```
+
+**2. Maven**
+- Add the following to your `pom.xml`:
+ ```xml
+<repository>
+       	<id>jitpack.io</id>
+	    <url>https://jitpack.io</url>
+</repository>
+
+<dependency>
+	    <groupId>com.github.PhilJay</groupId>
+	    <artifactId>ValueBar</artifactId>
+	    <version>v1.0.2</version>
+</dependency>
+```
+
+**3. jar file**
+- download the **latest .jar file** from the [**release-section**](https://github.com/PhilJay/ValueBar/releases) and copy it into the `libs` folder of your Android application project.
+
+**4. clone repo**
+- clone this repository and add the library folder to your Android application project
 
 Create a `ValueBar` in .xml:
 
